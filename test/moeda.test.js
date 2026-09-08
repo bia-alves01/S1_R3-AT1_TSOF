@@ -9,7 +9,10 @@ vi.mock('axios', () => ({
 }));
 
 describe('Biblioteca de moedas', () => {
-    it.only('deve buscar a cotação atual da moeda', async () => {
+
+    // BUSCAR COTAÇÃO
+
+    it('deve buscar a cotação atual da moeda', async () => {
         axios.get.mockResolvedValue({
             data: {
                 rates: { BRL: 5.36 }
@@ -50,17 +53,22 @@ describe('Biblioteca de moedas', () => {
         expect(cotacao).toBe(1.35)
     })
 
-    it('deve buscar a cotação de USD para EUR', async () => {
+    it('deve lançar erro quando a moeda destino não for encontrada', async () => {
         axios.get.mockResolvedValue({
             data: {
                 rates: { EUR: 0.85 }
             }
         });
-        const cotacao = await buscarCotacao('USD', 'EUR');
 
-        expect(cotacao).toBe(0.85)
+        await expect(
+            buscarCotacao('USD', 'BRL')
+        ).rejects.toThrow(
+            'Moeda destino não encontrada na resposta da API.'
+        );
     })
 
+
+    // CONVERTER MOEDA
 
     it('deve converter USD para BRL', async () => {
         axios.get.mockResolvedValue({
@@ -93,6 +101,14 @@ describe('Biblioteca de moedas', () => {
         const resultado = await converterMoeda(30, 'GBP', 'USD');
 
         expect(resultado).toBe(40.50)
+    })
+
+    it('deve lançar erro quando o valor for menor ou igual a zero', async () => {
+        await expect(
+            converterMoeda(0, 'USD', 'BRL')
+        ).rejects.toThrow(
+            'O valor deve ser maior que zero.'
+        );
     })
 
 });
